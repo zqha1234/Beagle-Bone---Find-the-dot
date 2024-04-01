@@ -3,6 +3,7 @@
 #include "../include/sharedMem-Linux.h"
 #include <stdio.h>
 #include <stdbool.h>
+#include "./../hal/include/hal/pwm.h"
 
 static bool flag = true;
 
@@ -20,11 +21,19 @@ bool isRun(void) {
 static void wait_for_shutdown(void){
     SharedMem_cleanup();
     Accelerometer_cleanup();
+    pwm_cleanup();
 }
 
 int main(void) {
     Accelerometer_init();
     SharedMem_init();
     wait_for_shutdown();
+    return 0;
+
+    //next we need to have the run logic here, i'll just init the prototype we can discuss what to do
+    while(isRun){
+        //game implementation
+    }
+    wait_for_shutdown;
     return 0;
 }
