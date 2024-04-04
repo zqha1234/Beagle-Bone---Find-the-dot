@@ -121,6 +121,10 @@ void SharedMem_init(void) {
         exit(1);
     }
 }
+//to prevent race conditions with display thread we made this func
+int get_hitcount(){
+    return hit_count;
+}
 
 // Shut down the thread
 void SharedMem_cleanup(void) {
