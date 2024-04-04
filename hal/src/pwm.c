@@ -11,7 +11,7 @@
 #define PWM_ENABLE_PATH "/sys/class/pwm/pwmchip0/pwm0/enable"
 
 // Function to write a value to a given file path
-static void write_to_file(const char *file_path, const char *value) {
+void write_to_file(const char *file_path, const char *value) {
     FILE *fp = fopen(file_path, "w");
     if (fp == NULL) {
         perror("Error opening file");

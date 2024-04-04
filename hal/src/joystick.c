@@ -28,7 +28,7 @@ void waitForJoystickRelease() {
 
         if (down == 0 || right == 0) {
             printf("Please let go of the joystick.\n");
-            sleepForMs(500);
+            sleep(5);
         }
     } while (down == 0 || right == 0);
 }

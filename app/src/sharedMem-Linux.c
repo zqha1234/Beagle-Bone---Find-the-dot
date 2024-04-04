@@ -122,7 +122,7 @@ void SharedMem_init(void) {
     }
 }
 //to prevent race conditions with display thread we made this func
-int get_hitcount(){
+int get_hitcount(void){
     return hit_count;
 }
 

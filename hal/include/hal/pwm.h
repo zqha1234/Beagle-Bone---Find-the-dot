@@ -18,4 +18,6 @@ void pwm_cleanup(void);
 // Plays a sound sequence based on the specified event type.
 void playSoundForEvent(int eventType);
 
+void write_to_file(const char *file_path, const char *value);
+
 #endif
