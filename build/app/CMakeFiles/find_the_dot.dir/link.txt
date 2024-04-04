@@ -1,1 +1,0 @@
-arm-linux-gnueabihf-gcc CMakeFiles/find_the_dot.dir/src/main.c.o CMakeFiles/find_the_dot.dir/src/sharedMem-Linux.c.o -o find_the_dot  ../hal/libhal.a -lpthread 
