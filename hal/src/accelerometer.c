@@ -137,6 +137,7 @@ uint8_t get_color() {
 static void* acc_function(void* unused) {
     (void)unused;
     accInit();
+    //in my thread function use isRun to start/stop
     while (isRun()) {
         unsigned char *values = readI2cReg(i2cFileDesc, STATUS_REG);
         x = ((values[1] << 8) | values[0]);

@@ -8,5 +8,6 @@
 void SharedMem_init(void);
 // clean up the thread
 void SharedMem_cleanup(void);
+int get_hitcount();
 
 #endif

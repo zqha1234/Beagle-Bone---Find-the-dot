@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <linux/i2c-dev.h>
+#include <pthread.h>
 #include "../include/hal/display.h"
 
 #define I2C_DEVICE_ADDRESS 0x20
@@ -11,26 +12,29 @@
 #define REG_DIRB 0x01
 #define REG_OUTA 0x02
 #define REG_OUTB 0x03
-
 #define I2CDRV_LINUX_BUS1 "/dev/i2c-1"
 
 int i2cFileDesc;
-/**
- * @jiu please update the segment digits if your's are different
-*/
+
+// Segment encoding for numbers 0-9
 static const unsigned char segment_digits[10][2] = {
-{0xd0, 0xe1}, // 0
-{0xc0, 0x00}, // 1
-{0x98, 0xc3}, // 2
-{0xd8, 0x43}, // 3
-{0xc8, 0x22}, // 4
-{0X58, 0x63}, // 5
-{0X58, 0xe3}, // 6
-{0x61, 0xc0}, // 7
-{0xd0, 0xf1}, // 8
-{0xd8, 0x63}, // 9
+    {0xd0, 0xe1}, // 0
+    {0xc0, 0x00}, // 1
+    {0x98, 0xc3}, // 2
+    {0xd8, 0x43}, // 3
+    {0xc8, 0x22}, // 4
+    {0x58, 0x63}, // 5
+    {0x58, 0xe3}, // 6
+    {0xc0, 0x61}, // 7
+    {0xd8, 0xe3}, // 8
+    {0xd8, 0x63}  // 9
 };
-void writeI2cReg(int i2cFileDesc, unsigned char regAddr, unsigned char value) {
+
+static pthread_t display_thread;
+static volatile int keep_display_running = 1;
+// extern volatile int hit_count; no longer need this
+
+static void writeI2cReg(int i2cFileDesc, unsigned char regAddr, unsigned char value) {
     unsigned char buff[2] = {regAddr, value};
     if (write(i2cFileDesc, buff, 2) != 2) {
         perror("I2C: Unable to write to i2c register.");
@@ -38,7 +42,7 @@ void writeI2cReg(int i2cFileDesc, unsigned char regAddr, unsigned char value) {
     }
 }
 
-int initI2cBus(char* bus, int address) {
+static int initI2cBus(char* bus, int address) {
     int file = open(bus, O_RDWR);
     if (file < 0) {
         perror("I2C: Unable to open bus for read/write");
@@ -52,24 +56,40 @@ int initI2cBus(char* bus, int address) {
     return file;
 }
 
+static void* display_update_thread(void* args) {
+    while (keep_display_running) {
+        int display_value = get_hitCount();
+        displayScore(display_value);
+        sleep(1); // Refresh every second
+    }
+    return NULL;
+}
+
 void displayInit(void) {
     i2cFileDesc = initI2cBus(I2CDRV_LINUX_BUS1, I2C_DEVICE_ADDRESS);
     writeI2cReg(i2cFileDesc, REG_DIRA, 0x00); // Set all pins of bank A to output
     writeI2cReg(i2cFileDesc, REG_DIRB, 0x00); // Set all pins of bank B to output
+    
+    // Start the display update thread
+    if (pthread_create(&display_thread, NULL, display_update_thread, NULL) != 0) {
+        perror("Failed to create the display update thread");
+        exit(1);
+    }
 }
 
 void displayScore(int score) {
-    unsigned int d1 = score / 10; // Extract tens digit
-    unsigned int d2 = score % 10; // Extract ones digit
+    unsigned int d1 = score / 10; // Tens digit
+    unsigned int d2 = score % 10; // Ones digit
 
-    // Write to REG_OUTA and REG_OUTB to control the display segments for each digit
-    writeI2cReg(i2cFileDesc, REG_OUTA, segment_digits[d1][0]); // Control segments for first digit
-    writeI2cReg(i2cFileDesc, REG_OUTB, segment_digits[d2][0]); // Control segments for second digit
+    writeI2cReg(i2cFileDesc, REG_OUTA, segment_digits[d1][0]); // Tens digit segments
+    writeI2cReg(i2cFileDesc, REG_OUTB, segment_digits[d2][0]); // Ones digit segments
 }
 
 void displayCleanup(void) {
-    // Turn off both displays by writing all segments off
-    writeI2cReg(i2cFileDesc, REG_OUTA, 0xFF); // Jiu: also this turns off all my display check yours
+    keep_display_running = 0;
+    pthread_join(display_thread, NULL);
+    
+    writeI2cReg(i2cFileDesc, REG_OUTA, 0xFF); // Turn off display
     writeI2cReg(i2cFileDesc, REG_OUTB, 0xFF);
     close(i2cFileDesc);
 }

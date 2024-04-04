@@ -9,6 +9,7 @@
 #include "../include/sharedDataStruct.h"
 #include "../include/main.h"
 #include "../../hal/include/hal/accelerometer.h"
+#include "../../hal/include/hal/sound.h"
 
 
 // General PRU Memomry Sharing Routine
@@ -85,11 +86,15 @@ static void* sharedMem_function(void* unused) {
         if (pSharedPru0->color_pattern == 6 && pSharedPru0->color == 3 && pSharedPru0->isJsDown) {
             hit_count++; // led display this hit_count value
             sleepForMs(100);
+            play_hit_sound();
             // printf("hit_count is: %d\n", hit_count); // debug use only
             // call sound (buzzer) function here, correct joystick press
+            //play correct sound
 
         } else if (pSharedPru0->isJsDown) {
             // call sound (buzzer) function here, wrong joystick press 
+            //play incorrect sound
+            play_miss_sound();
         }
         if (pSharedPru0->isJsRight) {
             pSharedPru0->color_pattern = 12;
