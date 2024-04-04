@@ -1,0 +1,2 @@
+/usr/bin/ar qc libhal.a CMakeFiles/hal.dir/src/accelerometer.c.o CMakeFiles/hal.dir/src/display.c.o CMakeFiles/hal.dir/src/joystick.c.o CMakeFiles/hal.dir/src/pwm.c.o CMakeFiles/hal.dir/src/sound.c.o
+/usr/bin/ranlib libhal.a

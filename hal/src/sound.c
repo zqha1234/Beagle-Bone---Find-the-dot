@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "pwm.h"
+#include "../include/hal/pwm.h"
 
 // Function prototypes
 void sound_init(void);
