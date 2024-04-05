@@ -85,6 +85,7 @@ static void* sharedMem_function(void* unused) {
         // printf("color is %d\n", pSharedPru0->color); // debug use only
         if (pSharedPru0->color_pattern == 6 && pSharedPru0->color == 3 && pSharedPru0->isJsDown) {
             hit_count++; // led display this hit_count value
+            printf("hc:\n", hit_count);
             sleepForMs(100);
             play_hit_sound();
             // printf("hit_count is: %d\n", hit_count); // debug use only
@@ -123,6 +124,7 @@ void SharedMem_init(void) {
 }
 //to prevent race conditions with display thread we made this func
 int get_hitcount(void){
+    printf("hitcount: \n", hit_count);
     return hit_count;
 }
 

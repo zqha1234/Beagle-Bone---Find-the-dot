@@ -6,6 +6,8 @@
 #include <linux/i2c-dev.h>
 #include <pthread.h>
 #include "../include/hal/display.h"
+#include "../../app/include/main.h"
+
 
 #define I2C_DEVICE_ADDRESS 0x20
 #define REG_DIRA 0x00
@@ -57,7 +59,7 @@ static int initI2cBus(char* bus, int address) {
 }
 
 static void* display_update_thread(void* args) {
-    while (keep_display_running) {
+    while (isrun()) {
         int display_value = get_hitCount();
         displayScore(display_value);
         sleep(1); // Refresh every second
