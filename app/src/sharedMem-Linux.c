@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <sys/mman.h>
 #include <pthread.h>
+#include <stdatomic.h>
+
 
 #include "../include/sharedDataStruct.h"
 #include "../include/main.h"
@@ -32,7 +34,8 @@ static volatile void *pPruBase;
 static volatile sharedMemStruct_t *pSharedPru0;
 
 static pthread_t sharedMem_thread; 
-static int hit_count = 0;
+static atomic_int hit_count = ATOMIC_VAR_INIT(0);
+
 
 
 // Return the address of the PRU's base memory
@@ -84,8 +87,9 @@ static void* sharedMem_function(void* unused) {
         // printf("color pattern is %d\n", pSharedPru0->color_pattern); // debug use only
         // printf("color is %d\n", pSharedPru0->color); // debug use only
         if (pSharedPru0->color_pattern == 6 && pSharedPru0->color == 3 && pSharedPru0->isJsDown) {
-            hit_count++; // led display this hit_count value
-            printf("hc:\n", hit_count);
+            // hit_count++; // led display this hit_count value
+            atomic_fetch_add(&hit_count, 1); // Increment
+            printf("hc:%d\n", hit_count); //debug: print hc correct
             sleepForMs(100);
             play_hit_sound();
             // printf("hit_count is: %d\n", hit_count); // debug use only
@@ -123,9 +127,10 @@ void SharedMem_init(void) {
     }
 }
 //to prevent race conditions with display thread we made this func
-int get_hitcount(void){
-    printf("hitcount: \n", hit_count);
-    return hit_count;
+int get_hitcount(void) {
+    int count = atomic_load(&hit_count);
+    printf("hitcount: %d\n", count);
+    return count;
 }
 
 // Shut down the thread

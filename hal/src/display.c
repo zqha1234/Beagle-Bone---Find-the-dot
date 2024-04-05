@@ -2,21 +2,25 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <stdatomic.h>
 #include <sys/ioctl.h>
 #include <linux/i2c-dev.h>
 #include <pthread.h>
+#include <stdatomic.h>  // For atomic_bool
 #include "../include/hal/display.h"
 #include "../../app/include/main.h"
-
+#include "../../app/include/sharedMem-Linux.h"
 
 #define I2C_DEVICE_ADDRESS 0x20
-#define REG_DIRA 0x00
-#define REG_DIRB 0x01
-#define REG_OUTA 0x02
-#define REG_OUTB 0x03
+#define REG_DIRA 0x00  // Set direction of bank A pins
+#define REG_DIRB 0x01  // Set direction of bank B pins
+#define REG_OUTA 0x02  // Output register for bank A
+#define REG_OUTB 0x03  // Output register for bank B
+
 #define I2CDRV_LINUX_BUS1 "/dev/i2c-1"
 
 int i2cFileDesc;
+atomic_bool keep_display_running = true;
 
 // Segment encoding for numbers 0-9
 static const unsigned char segment_digits[10][2] = {
@@ -33,8 +37,6 @@ static const unsigned char segment_digits[10][2] = {
 };
 
 static pthread_t display_thread;
-static volatile int keep_display_running = 1;
-// extern volatile int hit_count; no longer need this
 
 static void writeI2cReg(int i2cFileDesc, unsigned char regAddr, unsigned char value) {
     unsigned char buff[2] = {regAddr, value};
@@ -59,10 +61,11 @@ static int initI2cBus(char* bus, int address) {
 }
 
 static void* display_update_thread(void* args) {
-    while (isrun()) {
-        int display_value = get_hitCount();
-        displayScore(display_value);
-        sleep(1); // Refresh every second
+    while (atomic_load(&keep_display_running)) {
+        int current_hit_count = atomic_load(&hit_count);  // Ensure get_hitCount() is properly synchronized
+        printf("received hc: %d \n", current_hit_count);
+        displayScore(current_hit_count);
+        usleep(1000000); // Refresh every second, using usleep for microsecond precision
     }
     return NULL;
 }
@@ -72,7 +75,9 @@ void displayInit(void) {
     writeI2cReg(i2cFileDesc, REG_DIRA, 0x00); // Set all pins of bank A to output
     writeI2cReg(i2cFileDesc, REG_DIRB, 0x00); // Set all pins of bank B to output
     
-    // Start the display update thread
+    // Initialize the atomic flag
+    atomic_store(&keep_display_running, true);
+
     if (pthread_create(&display_thread, NULL, display_update_thread, NULL) != 0) {
         perror("Failed to create the display update thread");
         exit(1);
@@ -83,12 +88,16 @@ void displayScore(int score) {
     unsigned int d1 = score / 10; // Tens digit
     unsigned int d2 = score % 10; // Ones digit
 
+    // Ensure that the display is not trying to show more than two digits
+    d1 = d1 % 10;
+    d2 = d2 % 10;
+
     writeI2cReg(i2cFileDesc, REG_OUTA, segment_digits[d1][0]); // Tens digit segments
-    writeI2cReg(i2cFileDesc, REG_OUTB, segment_digits[d2][0]); // Ones digit segments
+    writeI2cReg(i2cFileDesc, REG_OUTB, segment_digits[d2][1]); // Ones digit segments
 }
 
 void displayCleanup(void) {
-    keep_display_running = 0;
+    atomic_store(&keep_display_running, false);
     pthread_join(display_thread, NULL);
     
     writeI2cReg(i2cFileDesc, REG_OUTA, 0xFF); // Turn off display

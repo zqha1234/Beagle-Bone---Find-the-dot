@@ -1,6 +1,8 @@
 #include "main.h"
 #include "../../hal/include/hal/accelerometer.h"
 #include "../../hal/include/hal/sound.h"
+#include "../../hal/include/hal/display.h"
+
 
 #include "../include/sharedMem-Linux.h"
 #include <stdio.h>
@@ -25,12 +27,14 @@ static void wait_for_shutdown(void){
     Accelerometer_cleanup();
     pwm_cleanup();
     sound_cleanup();
+    displayCleanup();
 }
 
 int main(void) {
     Accelerometer_init();
     SharedMem_init();
     sound_init();
+    displayInit();
     wait_for_shutdown();
     return 0;
 }
