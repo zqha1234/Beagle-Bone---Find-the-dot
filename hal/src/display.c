@@ -28,7 +28,6 @@ void writeFile (char* fileName, char* value) {
         printf("ERROR: Unable to open %s.\n", fileName);
         exit(1);
     }
-
     int charWritten = fprintf(pFile, value);
     if (charWritten <= 0) {
         printf("ERROR: Cannot write %s.\n", fileName);
