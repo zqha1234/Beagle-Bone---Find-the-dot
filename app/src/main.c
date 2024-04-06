@@ -27,14 +27,14 @@ static void wait_for_shutdown(void){
     Accelerometer_cleanup();
     pwm_cleanup();
     sound_cleanup();
-    displayCleanup();
+    // displayCleanup();
 }
 
 int main(void) {
     Accelerometer_init();
     SharedMem_init();
     sound_init();
-    displayInit();
+    // displayInit();
     wait_for_shutdown();
     return 0;
 }

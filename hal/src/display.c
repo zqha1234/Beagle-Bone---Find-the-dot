@@ -12,12 +12,14 @@
 #include "../../app/include/sharedMem-Linux.h"
 
 #define I2C_DEVICE_ADDRESS 0x20
-#define REG_DIRA 0x00  // Set direction of bank A pins
-#define REG_DIRB 0x01  // Set direction of bank B pins
-#define REG_OUTA 0x02  // Output register for bank A
-#define REG_OUTB 0x03  // Output register for bank B
+#define REG_DIRA 0x02 
+#define REG_DIRB 0x03 
+#define REG_OUTA 0x00 
+#define REG_OUTB 0x01 
 
+#define I2CDRV_LINUX_BUS0 "/dev/i2c-0"
 #define I2CDRV_LINUX_BUS1 "/dev/i2c-1"
+#define I2CDRV_LINUX_BUS2 "/dev/i2c-2"
 
 int i2cFileDesc;
 atomic_bool keep_display_running = true;
@@ -38,26 +40,27 @@ static const unsigned char segment_digits[10][2] = {
 
 static pthread_t display_thread;
 
-static void writeI2cReg(int i2cFileDesc, unsigned char regAddr, unsigned char value) {
-    unsigned char buff[2] = {regAddr, value};
-    if (write(i2cFileDesc, buff, 2) != 2) {
-        perror("I2C: Unable to write to i2c register.");
-        exit(1);
-    }
-}
+static void writeI2cReg(int i2cFileDesc, unsigned char regAddr, unsigned char value)
+{
+    unsigned char buff[2];
+    buff[0] = regAddr;
+    buff[1] = value;
+    int res = write(i2cFileDesc, buff, 2);
 
-static int initI2cBus(char* bus, int address) {
-    int file = open(bus, O_RDWR);
-    if (file < 0) {
-        perror("I2C: Unable to open bus for read/write");
-        exit(1);
+    if (res != 2) {
+    perror("I2C: Unable to write i2c register.");
+    exit(1);
+}
+}
+static int initI2cBus(char* bus, int address)
+{
+    int i2cFileDesc = open(bus, O_RDWR);
+    int result = ioctl(i2cFileDesc, I2C_SLAVE, address);
+    if (result < 0) {
+    perror("I2C: Unable to set I2C device to slave address.");
+    exit(1);
     }
-    if (ioctl(file, I2C_SLAVE, address) < 0) {
-        perror("I2C: Failed to connect to the device.");
-        close(file);
-        exit(1);
-    }
-    return file;
+    return i2cFileDesc;
 }
 
 static void* display_update_thread(void* args) {

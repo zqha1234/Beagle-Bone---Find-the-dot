@@ -20,6 +20,7 @@ void play_hit_sound(void);
 void play_miss_sound(void);
 
 void sound_init(void) {
+    runCommand("config-pin p9.22 pwm");
 }
 
 void sound_cleanup(void) {
