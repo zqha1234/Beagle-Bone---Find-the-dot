@@ -113,9 +113,9 @@ static unsigned char* readI2cReg(int i2cFileDesc, unsigned char regAddr) {
 
 void set_random(void) {
     srand(time(NULL));
-    x_random = (rand() % 11) - 5;
+    x_random = (rand() % 101) - 50;
     srand(time(NULL));
-    y_random = (rand() % 11) - 5;
+    y_random = (rand() % 101) - 50;
 }
 
 // initialize the accelometer
@@ -146,30 +146,30 @@ static void* acc_function(void* unused) {
         // printf("x: %f\n", (y/ one_g)); // debug use
         if (((y / one_g) - y_random / 10.0) <= -0.5) {
             color_pixel_pattern = 1;
-        } else if (((y / one_g) - y_random / 10.0) >= -0.5 && ((y / one_g) - y_random / 10.0) < -0.4) {
+        } else if (((y / one_g) - y_random / 100.0) >= -0.5 && ((y / one_g) - y_random / 100.0) < -0.4) {
             color_pixel_pattern = 2;
-        } else if (((y / one_g) - y_random / 10.0) >= -0.4 && ((y / one_g) - y_random / 10.0) < -0.3) {
+        } else if (((y / one_g) - y_random / 100.0) >= -0.4 && ((y / one_g) - y_random / 100.0) < -0.3) {
             color_pixel_pattern = 3;
-        } else if (((y / one_g) - y_random / 10.0) >= -0.3 && ((y / one_g) - y_random / 10.0) < -0.2) {
+        } else if (((y / one_g) - y_random / 100.0) >= -0.3 && ((y / one_g) - y_random / 100.0) < -0.2) {
             color_pixel_pattern = 4;
-        } else if (((y / one_g) - y_random / 10.0) >= -0.2 && ((y / one_g) - y_random / 10.0) < -0.1) {
+        } else if (((y / one_g) - y_random / 100.0) >= -0.2 && ((y / one_g) - y_random / 100.0) < -0.1) {
             color_pixel_pattern = 5;
-        } else if (((y / one_g) - y_random / 10.0) >= -0.1 && ((y / one_g) - y_random / 10.0) < 0.1) {
+        } else if (((y / one_g) - y_random / 100.0) >= -0.1 && ((y / one_g) - y_random / 100.0) < 0.1) {
             color_pixel_pattern = 6;
-        } else if (((y / one_g) - y_random / 10.0) >= 0.1 && ((y / one_g) - y_random / 10.0) < 0.2) {
+        } else if (((y / one_g) - y_random / 100.0) >= 0.1 && ((y / one_g) - y_random / 100.0) < 0.2) {
             color_pixel_pattern = 7;
-        } else if (((y / one_g) - y_random / 10.0) >= 0.2 && ((y / one_g) - y_random / 10.0) < 0.3) {
+        } else if (((y / one_g) - y_random / 100.0) >= 0.2 && ((y / one_g) - y_random / 100.0) < 0.3) {
             color_pixel_pattern = 8;
-        } else if (((y / one_g) - y_random / 10.0) >= 0.3 && ((y / one_g) - y_random / 10.0) < 0.4) {
+        } else if (((y / one_g) - y_random / 100.0) >= 0.3 && ((y / one_g) - y_random / 100.0) < 0.4) {
             color_pixel_pattern = 9;
-        } else if (((y / one_g) - y_random / 10.0) >= 0.4 && ((y / one_g) - y_random / 10.0) < 0.5) {
+        } else if (((y / one_g) - y_random / 100.0) >= 0.4 && ((y / one_g) - y_random / 100.0) < 0.5) {
             color_pixel_pattern = 10;
-        } else if (((y / one_g) - y_random / 10.0) >= 0.5) {
+        } else if (((y / one_g) - y_random / 100.0) >= 0.5) {
             color_pixel_pattern = 11;
         }
-        if (((x / one_g) - x_random / 10.0) < -0.1) {
+        if (((x / one_g) - x_random / 100.0) < -0.1) {
             color_pixel = 1;
-        } else if (((x / one_g) - x_random / 10.0) > 0.1) {
+        } else if (((x / one_g) - x_random / 100.0) > 0.1) {
             color_pixel = 2;
         } else {
             color_pixel = 3;
