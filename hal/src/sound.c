@@ -109,7 +109,7 @@ void Buzzer_init(void) {
 }
 
 
-// Shut down thread, and close i2cFileDesc
+// Shut down thread
 void Buzzer_cleanup(void) {
     pthread_join(buzzer_thread, NULL);
 }
