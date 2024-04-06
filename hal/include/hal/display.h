@@ -1,17 +1,32 @@
-#ifndef SEGMENT_DISPLAY_H
-#define SEGMENT_DISPLAY_H
+#ifndef FOURTEEN_SEG_DISPLAY_H_
+#define FOURTEEN_SEG_DISPLAY_H_
 
-// For atomic_bool
-#include <stdatomic.h> 
+#define I2CDRV_LINUX_BUS0 "/dev/i2c-0"
+#define I2CDRV_LINUX_BUS1 "/dev/i2c-1"
+#define I2CDRV_LINUX_BUS2 "/dev/i2c-2"
 
-// Function to initialize the 14-segment display and related I2C communication
-void displayInit(void);
+#define GPIO61_DIR "/sys/class/gpio/gpio61/direction"
+#define GPIO44_DIR "/sys/class/gpio/gpio44/direction"
 
-// Function to display the player's score on the 14-segment display
-// @param score The player's score to be displayed, expected to be in the range of 0-99
-void displayScore(int score);
+#define GPIO61_VAL "/sys/class/gpio/gpio61/value"
+#define GPIO44_VAL "/sys/class/gpio/gpio44/value"
 
-// Function to clean up and properly close the display and I2C communication on program exit
-void displayCleanup(void);
+#define GPIO_EXPORT "/sys/class/gpio/export"
 
-#endif // SEGMENT_DISPLAY_H
+#define I2C_DEVICE_ADDRESS 0x20
+
+#define REG_DIRA 0x02 // Zen Red uses: 0x02
+#define REG_DIRB 0x03 // Zen Red uses: 0x03
+#define REG_OUTA 0x00 // Zen Red uses: 0x00
+#define REG_OUTB 0x01 // Zen Red uses: 0x01
+
+// void sleepForMs(long long delayInMs);
+void set_display_value (int value);
+void initI2c(void);
+void Display_init(void);
+void Display_cleanup(void);
+void writeFile (char* fileName, char* value);
+// void runCommand(char* command);
+
+
+#endif

@@ -8,5 +8,5 @@
 void SharedMem_init(void);
 // clean up the thread
 void SharedMem_cleanup(void);
-static atomic_int hit_count = ATOMIC_VAR_INIT(0);
+int get_hit_count(void);
 #endif

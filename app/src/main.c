@@ -26,15 +26,17 @@ static void wait_for_shutdown(void){
     SharedMem_cleanup();
     Accelerometer_cleanup();
     pwm_cleanup();
+    Buzzer_cleanup();
     sound_cleanup();
-    displayCleanup();
+    Display_cleanup();
 }
 
 int main(void) {
     Accelerometer_init();
+    Display_init();
     SharedMem_init();
+    Buzzer_init();
     sound_init();
-    displayInit();
     wait_for_shutdown();
     return 0;
 }

@@ -34,7 +34,7 @@ static volatile void *pPruBase;
 static volatile sharedMemStruct_t *pSharedPru0;
 
 static pthread_t sharedMem_thread; 
-static atomic_int hit_count = ATOMIC_VAR_INIT(0);
+int hit_count = 0;
 
 
 
@@ -66,10 +66,12 @@ void freePruMmapAddr(volatile void* pPruBase)
     }
 }
 
+int get_hit_count(void) {
+    return hit_count;
+}
+
 static void* sharedMem_function(void* unused) {
     (void)unused;
- 
-
 
     runCommand("config-pin p8.15 pruin");
     runCommand("config-pin p8.16 pruin");
@@ -80,33 +82,31 @@ static void* sharedMem_function(void* unused) {
     pPruBase = getPruMmapAddr();
     pSharedPru0 = PRU0_MEM_FROM_BASE(pPruBase);
 
-
     while (isRun()) {
         pSharedPru0->color_pattern = get_color_pattern();
         pSharedPru0->color = get_color();
         // printf("color pattern is %d\n", pSharedPru0->color_pattern); // debug use only
         // printf("color is %d\n", pSharedPru0->color); // debug use only
         if (pSharedPru0->color_pattern == 6 && pSharedPru0->color == 3 && pSharedPru0->isJsDown) {
-            // hit_count++; // led display this hit_count value
-            atomic_fetch_add(&hit_count, 1); // Increment
-            printf("hc:%d\n", hit_count); //debug: print hc correct
-            sleepForMs(100);
-            play_hit_sound();
+            hit_count++; // led display this hit_count value
             // printf("hit_count is: %d\n", hit_count); // debug use only
-            // call sound (buzzer) function here, correct joystick press
             //play correct sound
+            set_hit_sound();
+            set_random();
+            sleepForMs(100);
 
         } else if (pSharedPru0->isJsDown) {
             // call sound (buzzer) function here, wrong joystick press 
             //play incorrect sound
-            play_miss_sound();
+            set_miss_sound();
+            sleepForMs(100);
         }
         if (pSharedPru0->isJsRight) {
             pSharedPru0->color_pattern = 12;
             // shut down the program
             Program_terminate();
         }
-        sleepForMs(100);
+        sleepForMs(80);
     }
 
     // Cleanup

@@ -19,14 +19,14 @@ static int16_t x;
 static int16_t y;
 static uint8_t color_pixel_pattern;
 static uint8_t color_pixel;
-// static double xy_threshold = 0.5;
 static unsigned char xl = OUT_X_L;
 static unsigned char xh = OUT_X_H;
 static unsigned char yl = OUT_Y_L;
 static unsigned char yh = OUT_Y_H;
-// static unsigned char zl = OUT_Z_L;
-// static unsigned char zh = OUT_Z_H;
 static double one_g = 16384.0;
+
+static int x_random = 0;
+static int y_random = 0;
 
 // Delay in ms
 void sleepForMs(long long delayInMs) {
@@ -108,20 +108,21 @@ static unsigned char* readI2cReg(int i2cFileDesc, unsigned char regAddr) {
     write(i2cFileDesc, &yh, 1);
     read(i2cFileDesc, data, 1);
     buff[3] = data[0];
-    // write(i2cFileDesc, &zl, 1);
-    // read(i2cFileDesc, data, 1);
-    // buff[4] = data[0];
-    // write(i2cFileDesc, &zh, 1);
-    // read(i2cFileDesc, data, 1);
-    // buff[5] = data[0];
     return buff;
+}
+
+void set_random(void) {
+    srand(time(NULL));
+    x_random = (rand() % 11) - 5;
+    srand(time(NULL));
+    y_random = (rand() % 11) - 5;
 }
 
 // initialize the accelometer
 static void accInit(void) {
     runCommand("config-pin P9_18 i2c");
     runCommand("config-pin P9_17 i2c");
-    i2cFileDesc = initI2cBus(I2CDRV_LINUX_BUS1, I2C_DEVICE_ADDRESS);
+    i2cFileDesc = initI2cBus(I2CDRV_LINUX_BUS1, I2C_DEVICE_ADDRESS_);
     writeI2cReg(i2cFileDesc, CTRL_REG1, 0x27);
     writeI2cReg(i2cFileDesc, CTRL_REG4, 0x00);
 }
@@ -137,38 +138,38 @@ uint8_t get_color() {
 static void* acc_function(void* unused) {
     (void)unused;
     accInit();
-    //in my thread function use isRun to start/stop
+    set_random();
     while (isRun()) {
         unsigned char *values = readI2cReg(i2cFileDesc, STATUS_REG);
         x = ((values[1] << 8) | values[0]);
         y = ((values[3] << 8) | values[2]);
         // printf("x: %f\n", (y/ one_g)); // debug use
-        if ((y / one_g) <= -0.5) {
+        if (((y / one_g) - y_random / 10.0) <= -0.5) {
             color_pixel_pattern = 1;
-        } else if ((y / one_g) >= -0.5 && (y / one_g) < -0.4) {
+        } else if (((y / one_g) - y_random / 10.0) >= -0.5 && ((y / one_g) - y_random / 10.0) < -0.4) {
             color_pixel_pattern = 2;
-        } else if ((y / one_g) >= -0.4 && (y / one_g) < -0.3) {
+        } else if (((y / one_g) - y_random / 10.0) >= -0.4 && ((y / one_g) - y_random / 10.0) < -0.3) {
             color_pixel_pattern = 3;
-        } else if ((y / one_g) >= -0.3 && (y / one_g) < -0.2) {
+        } else if (((y / one_g) - y_random / 10.0) >= -0.3 && ((y / one_g) - y_random / 10.0) < -0.2) {
             color_pixel_pattern = 4;
-        } else if ((y / one_g) >= -0.2 && (y / one_g) < -0.1) {
+        } else if (((y / one_g) - y_random / 10.0) >= -0.2 && ((y / one_g) - y_random / 10.0) < -0.1) {
             color_pixel_pattern = 5;
-        } else if ((y / one_g) >= -0.1 && (y / one_g) < 0.1) {
+        } else if (((y / one_g) - y_random / 10.0) >= -0.1 && ((y / one_g) - y_random / 10.0) < 0.1) {
             color_pixel_pattern = 6;
-        } else if ((y / one_g) >= 0.1 && (y / one_g) < 0.2) {
+        } else if (((y / one_g) - y_random / 10.0) >= 0.1 && ((y / one_g) - y_random / 10.0) < 0.2) {
             color_pixel_pattern = 7;
-        } else if ((y / one_g) >= 0.2 && (y / one_g) < 0.3) {
+        } else if (((y / one_g) - y_random / 10.0) >= 0.2 && ((y / one_g) - y_random / 10.0) < 0.3) {
             color_pixel_pattern = 8;
-        } else if ((y / one_g) >= 0.3 && (y / one_g) < 0.4) {
+        } else if (((y / one_g) - y_random / 10.0) >= 0.3 && ((y / one_g) - y_random / 10.0) < 0.4) {
             color_pixel_pattern = 9;
-        } else if ((y / one_g) >= 0.4 && (y / one_g) < 0.5) {
+        } else if (((y / one_g) - y_random / 10.0) >= 0.4 && ((y / one_g) - y_random / 10.0) < 0.5) {
             color_pixel_pattern = 10;
-        } else if ((y / one_g) >= 0.5 && (x / one_g) < -0.1) {
+        } else if (((y / one_g) - y_random / 10.0) >= 0.5) {
             color_pixel_pattern = 11;
         }
-        if ((x / one_g) < -0.1) {
+        if (((x / one_g) - x_random / 10.0) < -0.1) {
             color_pixel = 1;
-        } else if ((x / one_g) > 0.1) {
+        } else if (((x / one_g) - x_random / 10.0) > 0.1) {
             color_pixel = 2;
         } else {
             color_pixel = 3;

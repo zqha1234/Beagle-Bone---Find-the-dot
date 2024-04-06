@@ -1,12 +1,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <pthread.h>
+#include <stdbool.h>
+#include "../../app/include/main.h"
 #include "../include/hal/pwm.h"
+#include "../include/hal/sound.h"
+#include "../include/hal/accelerometer.h"
 
 // Define paths according to your system's PWM interface
 #define PWM_ENABLE_PATH "/dev/bone/pwm/0/a/enable"
 #define PWM_PERIOD_PATH "/dev/bone/pwm/0/a/period"
 #define PWM_DUTY_CYCLE_PATH "/dev/bone/pwm/0/a/duty_cycle"
+
+static pthread_t buzzer_thread; 
+
+static bool hit_sound = false;
+static bool miss_sound = false;
+
 
 // Prototypes for internal functions
 // int write_to_file(const char *file_path, const char *value);
@@ -20,6 +31,7 @@ void play_hit_sound(void);
 void play_miss_sound(void);
 
 void sound_init(void) {
+    runCommand("config-pin p9.22 pwm");
 }
 
 void sound_cleanup(void) {
@@ -54,21 +66,50 @@ void play_note_for_duration(int frequency, int duration_ms) {
 }
 
 void play_hit_sound(void) {
-    play_note_for_duration(523, 200); // Play C5 (523 Hz) for 200 ms as a hit sound
+    play_note_for_duration(523, 500); // Play C5 (523 Hz) for 500 ms as a hit sound
 }
 
 void play_miss_sound(void) {
-    play_note_for_duration(440, 200); // Play A4 (440 Hz) for 200 ms as a miss sound
+    play_note_for_duration(440, 500); // Play A4 (440 Hz) for 500 ms as a miss sound
 }
 
-// Internal helper function to write a string value to a file
-// int write_to_file(const char *file_path, const char *value) {
-//     FILE *fp = fopen(file_path, "w");
-//     if (!fp) {
-//         perror("Error opening file");
-//         return -1;
-//     }
-//     fprintf(fp, "%s", value);
-//     fclose(fp);
-//     return 0;
-// }
+void set_hit_sound(void) {
+    hit_sound = true;
+}
+void set_miss_sound(void) {
+    miss_sound = true;
+}
+
+static void *buzzer_function(void* unused) {
+    (void)unused;
+    while (isRun()) {
+        if (hit_sound) {
+            play_hit_sound();
+            hit_sound = false;
+        }
+        if (miss_sound) {
+            play_miss_sound();
+            miss_sound = false;
+        }
+        sleepForMs(50);
+    }
+    return NULL;
+}
+
+// Createa a background thread
+void Buzzer_init(void) {
+    int result_thread;
+    result_thread = pthread_create(&buzzer_thread, NULL, buzzer_function, NULL);
+    //check if the thread is created sucessfully
+    if (result_thread != 0){
+        // if thread cration fails, exit the program
+        perror("Thread Creation Error!\n");
+        exit(1);
+    }
+}
+
+
+// Shut down thread, and close i2cFileDesc
+void Buzzer_cleanup(void) {
+    pthread_join(buzzer_thread, NULL);
+}

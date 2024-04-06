@@ -10,7 +10,7 @@
 // define the i2c
 #define I2CDRV_LINUX_BUS1 "/dev/i2c-1"
 // define i2c device address
-#define I2C_DEVICE_ADDRESS 0x18
+#define I2C_DEVICE_ADDRESS_ 0x18
 // I2C register for accelerometer
 #define CTRL_REG1 0x20
 #define CTRL_REG4 0x23
@@ -32,6 +32,8 @@ void Accelerometer_cleanup(void);
 void sleepForMs(long long delayInMs);
 // run linux command
 void runCommand(char* command);
+// generate random numbers
+void set_random(void);
 
 uint8_t get_color_pattern();
 uint8_t get_color();
